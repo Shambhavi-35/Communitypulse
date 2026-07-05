@@ -1,11 +1,10 @@
 {
   "version": 2,
-  "buildCommand": "echo 'Static deployment'",
   "outputDirectory": "frontend",
-  "routes": [
+  "rewrites": [
     {
-      "src": "/(.*)",
-      "dest": "/index.html"
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }

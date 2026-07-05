@@ -1,0 +1,11 @@
+{
+  "name": "communitypulse-frontend",
+  "version": "1.0.0",
+  "description": "AI Decision Intelligence Dashboard",
+  "scripts": {
+    "build": "echo 'Static files only'"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT"
+}

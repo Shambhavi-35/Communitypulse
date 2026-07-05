@@ -139,7 +139,10 @@
 </div>
 
 <script>
-const API = "http://localhost:8000";
+const API = window.location.hostname === "localhost" 
+  ? "http://localhost:8000" 
+  : "https://communitypulse-backend.onrender.com";  // Replace with your Render backend URL
+
 const LOCALITIES = ["Rajajinagar","Whitefield","Koramangala","Yelahanka"];
 const SYMPTOMS = ["fever","respiratory","dengue_like","gastro"];
 let trendChart;

@@ -1,0 +1,12 @@
+[
+  {
+    "action_id": "ACT0001",
+    "action_type": "LOGGED_LOW_RISK",
+    "timestamp": "2026-07-05T06:08:34.559212+00:00",
+    "details": {
+      "locality": "Rajajinagar",
+      "patient_ref": "2033",
+      "notes": "fever"
+    }
+  }
+]

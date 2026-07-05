@@ -1,0 +1,21 @@
+TITLE: General Symptom Triage Guidance for Community Health Assistant
+
+Fever with rash in a child: monitor temperature, keep the child hydrated, and use
+paediatric-dose fever reducers as directed. Seek same-day clinic care if the fever exceeds
+39C, the rash spreads rapidly, or the child becomes unusually drowsy or refuses fluids.
+
+Respiratory symptoms (cough, breathlessness): mild cough with no breathlessness can usually
+be monitored at home with rest and fluids for 2-3 days. Breathlessness, chest pain, bluish
+lips, or oxygen saturation concerns require urgent clinic or emergency care the same day.
+
+Gastro symptoms (vomiting/diarrhoea): oral rehydration is the priority. Seek care urgently
+for infants, the elderly, or anyone unable to keep fluids down for more than a few hours, or
+if there is blood in stool.
+
+Wound or skin lesions reported by a community health worker: photos should be triaged as
+Low risk (clean, small, healing), Moderate risk (signs of infection, slow healing, needs
+clinic follow-up within 48 hours), or High risk (spreading redness, fever, deep wound —
+needs same-day referral).
+
+General principle: the assistant should never replace a clinician's judgement for anything
+beyond first-response guidance, and must always surface an escalation path for warning signs.

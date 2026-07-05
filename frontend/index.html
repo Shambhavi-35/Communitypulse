@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>CommunityPulse — Decision Intelligence Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.3/chart.umd.min.js"></script>
+<style>
+  :root{
+    --navy:#1B3A57; --teal:#0F7B7B; --bg:#F6F8F9; --card:#FFFFFF;
+    --border:#E1E7EA; --text:#222; --muted:#66707A; --danger:#C1443C; --warn:#C98A1E;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--text);}
+  header{background:var(--navy);color:#fff;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;}
+  header h1{font-size:20px;margin:0;letter-spacing:.2px;}
+  header span{font-size:13px;color:#B9CBDA;}
+  .layout{display:grid;grid-template-columns:1.3fr 1fr;gap:20px;padding:24px;max-width:1400px;margin:0 auto;}
+  .col{display:flex;flex-direction:column;gap:20px;}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 20px;}
+  .card h2{font-size:15px;margin:0 0 12px;color:var(--navy);border-bottom:2px solid var(--teal);padding-bottom:8px;}
+  .stat-row{display:flex;gap:16px;flex-wrap:wrap;}
+  .stat{flex:1;min-width:110px;background:#F0F5F7;border-radius:8px;padding:12px;text-align:center;}
+  .stat .n{font-size:22px;font-weight:700;color:var(--navy);}
+  .stat .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;}
+  select,button,input{font-family:inherit;font-size:13px;padding:7px 10px;border:1px solid var(--border);border-radius:6px;background:#fff;}
+  button{background:var(--teal);color:#fff;border:none;cursor:pointer;font-weight:600;}
+  button:hover{background:#0c6363;}
+  button.secondary{background:var(--navy);}
+  .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;}
+  canvas{max-height:230px;}
+  table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--border);}
+  th{color:var(--muted);font-weight:600;text-transform:uppercase;font-size:10.5px;}
+  .badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;}
+  .badge.high{background:#FBE7E5;color:var(--danger);}
+  .badge.moderate{background:#FCF1DC;color:var(--warn);}
+  .badge.low{background:#E6F2EE;color:var(--teal);}
+  #chatlog{height:260px;overflow-y:auto;border:1px solid var(--border);border-radius:8px;padding:12px;background:#FAFBFC;margin-bottom:10px;font-size:13.5px;}
+  .msg{margin-bottom:12px;}
+  .msg .who{font-weight:700;font-size:11px;text-transform:uppercase;color:var(--muted);margin-bottom:3px;}
+  .msg.user .who{color:var(--navy);}
+  .msg.bot .who{color:var(--teal);}
+  .sources{font-size:11px;color:var(--muted);margin-top:4px;}
+  .actionlog li{font-size:12.5px;margin-bottom:8px;padding-bottom:8px;border-bottom:1px dashed var(--border);}
+  .empty{color:var(--muted);font-size:13px;font-style:italic;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>CommunityPulse</h1>
+  <span>AI-powered community wellness &amp; decision intelligence</span>
+</header>
+
+<div class="card" style="max-width:1400px;margin:24px auto 0;padding:20px 24px;">
+  <h2 style="margin-bottom:8px;">AI Decision Intelligence for Smarter Communities</h2>
+  <p style="margin:0 0 12px;color:#475569;line-height:1.55;">
+    CommunityPulse brings together conversational analytics, forecasting, anomaly detection, and workflow automation to help cities and organizations understand community signals, predict risks, and respond faster in areas such as healthcare access, public safety, urban mobility, and environmental resilience.
+  </p>
+  <div class="stat-row">
+    <div class="stat"><div class="n">RAG</div><div class="l">Natural-language assistant</div></div>
+    <div class="stat"><div class="n">Forecast</div><div class="l">Demand &amp; risk prediction</div></div>
+    <div class="stat"><div class="n">Agent</div><div class="l">Workflow automation</div></div>
+    <div class="stat"><div class="n">Insights</div><div class="l">Anomaly detection</div></div>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="col">
+
+    <div class="card">
+      <h2>City Health Snapshot (last 35 days)</h2>
+      <div class="stat-row" id="stat-row"><div class="empty">Loading…</div></div>
+    </div>
+
+    <div class="card">
+      <h2>Case Trend Explorer</h2>
+      <div class="row">
+        <select id="loc-select"></select>
+        <select id="sym-select"></select>
+        <button onclick="loadTimeseries()">Show trend</button>
+        <button class="secondary" onclick="loadForecast()">Forecast next 7 days</button>
+      </div>
+      <canvas id="trendChart"></canvas>
+    </div>
+
+    <div class="card">
+      <h2>Anomaly Alerts</h2>
+      <div class="row">
+        <button onclick="loadAnomalies()">Refresh anomalies</button>
+        <button class="secondary" onclick="runOutbreakCheck()">Run outbreak-response agent</button>
+      </div>
+      <div id="anomaly-table"><div class="empty">Click refresh to scan for anomalies.</div></div>
+    </div>
+
+  </div>
+
+  <div class="col">
+
+    <div class="card">
+      <h2>Ask the Community Health Assistant</h2>
+      <div id="chatlog"></div>
+      <div class="row">
+        <select id="ask-locality" style="min-width:140px;">
+          <option value="">No locality context</option>
+        </select>
+      </div>
+      <div class="row">
+        <input id="ask-input" style="flex:1;" placeholder="e.g. What should I do if my child has a fever and rash?" />
+        <button onclick="askQuestion()">Ask</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Simulate Field Case Triage (CHW multimodal report)</h2>
+      <div class="row">
+        <select id="triage-risk">
+          <option value="low">Low risk</option>
+          <option value="moderate">Moderate risk</option>
+          <option value="high">High risk</option>
+        </select>
+        <select id="triage-locality"></select>
+      </div>
+      <div class="row">
+        <input id="triage-ref" placeholder="Patient ref (e.g. P-2044)" style="flex:1;" />
+      </div>
+      <div class="row">
+        <input id="triage-notes" placeholder="Field notes" style="flex:1;" />
+        <button onclick="submitTriage()">Submit to agent</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Automated Action Log</h2>
+      <ul class="actionlog" id="action-log"><li class="empty">No actions yet.</li></ul>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API = "http://localhost:8000";
+const LOCALITIES = ["Rajajinagar","Whitefield","Koramangala","Yelahanka"];
+const SYMPTOMS = ["fever","respiratory","dengue_like","gastro"];
+let trendChart;
+
+function fillSelect(id, items, placeholder){
+  const el = document.getElementById(id);
+  if(placeholder) el.innerHTML += "";
+  items.forEach(v=>{
+    const opt = document.createElement("option");
+    opt.value = v; opt.textContent = v.replace("_"," ");
+    el.appendChild(opt);
+  });
+}
+["loc-select","triage-locality"].forEach(id=>fillSelect(id, LOCALITIES));
+fillSelect("sym-select", SYMPTOMS);
+fillSelect("ask-locality", LOCALITIES);
+
+async function loadSummary(){
+  const res = await fetch(`${API}/analytics/summary`);
+  const data = await res.json();
+  const row = document.getElementById("stat-row");
+  row.innerHTML = "";
+  const topLocality = Object.entries(data.cases_by_locality)[0];
+  const topSymptom = Object.entries(data.cases_by_symptom)[0];
+  const stats = [
+    ["Total cases", data.total_cases_35_days],
+    ["Highest-load locality", topLocality[0]],
+    ["Leading symptom cluster", topSymptom[0].replace("_"," ")],
+    ["Clinics tracked", data.clinics.length],
+  ];
+  stats.forEach(([l,n])=>{
+    row.innerHTML += `<div class="stat"><div class="n">${n}</div><div class="l">${l}</div></div>`;
+  });
+}
+
+async function loadTimeseries(){
+  const loc = document.getElementById("loc-select").value;
+  const sym = document.getElementById("sym-select").value;
+  const res = await fetch(`${API}/analytics/timeseries?locality=${loc}&symptom_cluster=${sym}`);
+  const data = await res.json();
+  renderChart(data.map(d=>d.date), [{label:`${loc} — ${sym}`, data:data.map(d=>d.case_count), color:"#0F7B7B"}]);
+}
+
+async function loadForecast(){
+  const loc = document.getElementById("loc-select").value;
+  const sym = document.getElementById("sym-select").value;
+  const histRes = await fetch(`${API}/analytics/timeseries?locality=${loc}&symptom_cluster=${sym}`);
+  const hist = await histRes.json();
+  const fcRes = await fetch(`${API}/analytics/forecast?locality=${loc}&symptom_cluster=${sym}`);
+  const fc = await fcRes.json();
+  if(fc.error){ alert(fc.error); return; }
+  const labels = [...hist.map(d=>d.date), ...fc.forecast.map(d=>d.date)];
+  const histData = hist.map(d=>d.case_count);
+  const fcData = new Array(hist.length - 1).fill(null).concat([histData[histData.length-1]], fc.forecast.map(d=>d.forecast));
+  renderChart(labels, [
+    {label:"Actual", data: histData, color:"#1B3A57"},
+    {label:"Forecast (+7d)", data: fcData, color:"#C98A1E", dashed:true},
+  ]);
+}
+
+function renderChart(labels, datasets){
+  if(trendChart) trendChart.destroy();
+  trendChart = new Chart(document.getElementById("trendChart"), {
+    type: "line",
+    data: { labels, datasets: datasets.map(d=>({
+      label:d.label, data:d.data, borderColor:d.color, backgroundColor:"transparent",
+      borderDash: d.dashed ? [6,4] : [], tension:.25, pointRadius:2,
+    })) },
+    options: { responsive:true, maintainAspectRatio:false,
+      scales:{ x:{ ticks:{ maxTicksLimit:8, font:{size:10} } }, y:{ beginAtZero:true } } },
+  });
+}
+
+async function loadAnomalies(){
+  const res = await fetch(`${API}/analytics/anomalies`);
+  const data = await res.json();
+  const el = document.getElementById("anomaly-table");
+  if(data.count === 0){ el.innerHTML = '<div class="empty">No anomalies detected.</div>'; return; }
+  let html = `<table><tr><th>Date</th><th>Locality</th><th>Symptom</th><th>Count</th><th>Baseline</th><th>Z-score</th></tr>`;
+  data.anomalies.slice(0,10).forEach(a=>{
+    html += `<tr><td>${a.date}</td><td>${a.locality}</td><td>${a.symptom_cluster.replace("_"," ")}</td><td>${a.case_count}</td><td>${a.rolling_mean}</td><td>${a.z_score}</td></tr>`;
+  });
+  html += "</table>";
+  el.innerHTML = html;
+}
+
+async function runOutbreakCheck(){
+  const res = await fetch(`${API}/workflows/run-outbreak-check`, {method:"POST"});
+  const data = await res.json();
+  alert(`Considered ${data.anomalies_considered} anomalies. Triggered ${data.actions_triggered.length} outbreak-response action(s). See action log.`);
+  loadActionLog();
+}
+
+async function askQuestion(){
+  const input = document.getElementById("ask-input");
+  const q = input.value.trim();
+  if(!q) return;
+  const locality = document.getElementById("ask-locality").value;
+  const log = document.getElementById("chatlog");
+  log.innerHTML += `<div class="msg user"><div class="who">You</div>${q}</div>`;
+  input.value = "";
+  log.scrollTop = log.scrollHeight;
+
+  const res = await fetch(`${API}/ask`, {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({question:q, locality: locality || null}),
+  });
+  const data = await res.json();
+  const sources = data.sources && data.sources.length ? `<div class="sources">Sources: ${data.sources.join(", ")}</div>` : "";
+  log.innerHTML += `<div class="msg bot"><div class="who">Assistant</div>${data.answer}${sources}</div>`;
+  log.scrollTop = log.scrollHeight;
+}
+document.getElementById("ask-input").addEventListener("keydown", e=>{ if(e.key==="Enter") askQuestion(); });
+
+async function submitTriage(){
+  const risk = document.getElementById("triage-risk").value;
+  const locality = document.getElementById("triage-locality").value;
+  const ref = document.getElementById("triage-ref").value || "P-UNSPECIFIED";
+  const notes = document.getElementById("triage-notes").value;
+  await fetch(`${API}/workflows/triage`, {
+    method:"POST", headers:{"Content-Type":"application/json"},
+    body: JSON.stringify({risk_level:risk, locality, patient_ref:ref, notes}),
+  });
+  loadActionLog();
+}
+
+async function loadActionLog(){
+  const res = await fetch(`${API}/workflows/actions`);
+  const data = await res.json();
+  const el = document.getElementById("action-log");
+  if(!data.length){ el.innerHTML = '<li class="empty">No actions yet.</li>'; return; }
+  el.innerHTML = data.slice(0,8).map(a=>{
+    const badgeClass = a.action_type.includes("SAME_DAY") ? "high" : a.action_type.includes("FOLLOWUP") ? "moderate" : "low";
+    return `<li><span class="badge ${badgeClass}">${a.action_type.replace(/_/g," ")}</span><br>${JSON.stringify(a.details)}</li>`;
+  }).join("");
+}
+
+loadSummary();
+loadActionLog();
+</script>
+</body>
+</html>
